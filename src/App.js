@@ -1,24 +1,89 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
+import { Admin, Analytics, Dashboard, Home, Landing } from "./pages";
+import { ProtectedRoute } from "./components/ProtectRoute";
+import { useState } from "react";
 
-function App() {
+const App = () => {
+  const [user, setuser] = useState(null);
+
+  const login = () => {
+    setuser({
+      id: 1,
+      name: "Jhon",
+      permissions:['analie'],
+      roles:['admi']
+    });
+  };
+
+  const logout = () => setuser(null);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <BrowserRouter>
+      <Navigation />
+
+      {user ? (
+        <button onClick={logout}>Logout</button>
+      ) : (
+        <button onClick={login}>Login</button>
+      )}
+
+      <Routes>
+        <Route path="/" index element={<Landing />} />
+        <Route path="/landing" element={<Landing />} />
+
+        <Route element={<ProtectedRoute isAllowed={!!user} />}>
+          <Route path="/home" element={<Home/>}/>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        <Route path="/analytics" element={
+          <ProtectedRoute 
+          isAllowed={!!user && user.permissions.includes('analize')} 
+          redirectTo="/home"
+          >
+            <Analytics />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin" element={
+        <ProtectedRoute 
+        isAllowed={!!user && user.roles.includes('admin')} 
+        redirectTo="/home"
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          <Admin />
+        </ProtectedRoute>
+        
+        } />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+function Navigation() {
+  return (
+    <nav>
+      <ul>
+        <li>
+          <Link to="/landing">Landing</Link>
+        </li>
+
+        <li>
+          <Link to="/home">Home</Link>
+        </li>
+
+        <li>
+          <Link to="/dashboard">Dashboard</Link>
+        </li>
+
+        <li>
+          <Link to="/analytics">Analytics</Link>
+        </li>
+
+        <li>
+          <Link to="/admin">Admin</Link>
+        </li>
+      </ul>
+    </nav>
   );
 }
 
